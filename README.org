@@ -16,6 +16,8 @@ Instead of handling possible errors that could arise at every step of the way, w
 
 In the [[https://www.youtube.com/watch?v=FN2RM-CHkuI][video]], the kids are frustrated because their father is failing in ways they didn't expect him to fail. He's doing things they didn't want him to do. On the computer, why would we program the ability to do things we don't want to happen? We don't want it to be possible to attempt to put a knife in a closed jar, so we shouldn't make a function where that can happen. Type systems help us resolve this.
 
+A general comment about OOP code. In the Ruby ~Sandwich~ class, I didn't know what the ~build!~ method was supposed to do when I first saw it. Based on the name, I figured it would build a sandwich and modify the instance. I didn't know if it would also modify something inside the sandwich, like the slices of bread. Without reading the rest of the code, how could I know what else might get modified down the line? To discover the function's purpose and result, I had to read its entire body.
+
 ** Haskell, idiomatic solution
 
 ** Haskell, type-safe solution
