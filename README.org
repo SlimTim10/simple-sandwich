@@ -6,7 +6,7 @@ Inspired by https://neckdeep.dev/blog/2022-12-13-a-simple-sandwich-i/
 
 Run continuously with ~dev.sh~, or one-shot with ~run.sh~.
 
-*** Thoughts
+*** Notes
 
 I don't understand this definition of a sandwich.
 
@@ -18,7 +18,21 @@ In the [[https://www.youtube.com/watch?v=FN2RM-CHkuI][video]], the kids are frus
 
 A general comment about OOP code. In the Ruby ~Sandwich~ class, I didn't know what the ~build!~ method was supposed to do when I first saw it. Based on the name, I figured it would build a sandwich and modify the instance. I didn't know if it would also modify something inside the sandwich, like the slices of bread. Without reading the rest of the code, how could I know what else might get modified down the line? To discover the function's purpose and result, I had to read its entire body.
 
+An interesting thought arises about the state of all items involved. For instance, once a knife is obtained and it has been loaded with peanut butter, we should only have one knife which is loaded with peanut butter. But in the Haskell version, after getting a loaded knife, we still have access to the original empty knife. To address this, we could have a state representing all of the items involved, which would have to get threaded through each function and only things from the state could be used.
+
 ** Haskell, idiomatic solution
+
+Run continuously with ~dev.sh~, or one-shot with ~run.sh~.
+
+*** Notes
+
+This version is a more idiomatic Haskell approach. Records are used less freely. There are sum types for the utensil shapes and condiments. There are fewer functions overall, as the OOP translation has many functions which are similar to OOP methods and aren't idiomatic to Haskell.
+
+There are functions to "fetch" items from the kitchen, which act similarly to the "new" functions in the OOP version.
+
+Some of the definitions are different in concept. A sandwich has a top and bottom slice of bread, and it can be cut into multiple pieces. There is also a ~makeSandwich~ function, whose job is to attempt to make a sandwich out of two slices of bread (which are meant to be smeared on their appropriate surfaces). We also have multiple utensil shapes (knife, spoon, and fork) and flavours of bread..
+
+It is still using ~Either~ for error handling, the same as the OOP solution.
 
 ** Haskell, type-safe solution
 
