@@ -34,6 +34,8 @@ Some of the definitions are different in concept. A sandwich has a top and botto
 
 It is still using ~Either~ for error handling, the same as the OOP solution.
 
+There is room for improvement. It is still possible to make a sandwich which should not be considered a sandwich. If we bypass using the ~makeSandwich~ function, we could make a variable of type ~Sandwich~ whose bottom and top are unsmeared. Or whose pieces don't match the flavours of the bottom and top (or no pieces at all!). Along the way, if we don't make use of the proper functions we won't encounter the errors, and we can easily end up with nonsensical items and combinations.
+
 ** Haskell, type-safe solution
 
 ** Agda
