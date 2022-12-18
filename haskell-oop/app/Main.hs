@@ -13,7 +13,7 @@ main = do
   let knife = Knife.new
 
   -- First attempt. Didn't open the jar of peanut butter.
-  either (\e -> print $ "Error: " ++ e) print $ do
+  either (\e -> putStrLn $ "Error: " ++ e) putStrLn $ do
     (pbKnife, pbEmpty) <- knife `Knife.loadFrom` pb -- Problem
     (usedKnife1, surface1) <- Bread.smearSurface pbKnife . Bread.top . head $ bread
     (jellyKnife, jellyEmpty) <- knife `Knife.loadFrom` Condiment.openJar jelly
@@ -23,7 +23,7 @@ main = do
     return "Sandwich made!"
 
   -- Next attempt. Used too much bread inside.
-  either (\e -> print $ "Error: " ++ e) print $ do
+  either (\e -> putStrLn $ "Error: " ++ e) putStrLn $ do
     (pbKnife, pbEmpty) <- knife `Knife.loadFrom` Condiment.openJar pb
     (usedKnife1, surface1) <- Bread.smearSurface pbKnife . Bread.top . head $ bread
     (jellyKnife, jellyEmpty) <- knife `Knife.loadFrom` Condiment.openJar jelly
@@ -33,7 +33,7 @@ main = do
     return "Sandwich made!"
 
   -- Successful sandwich making!
-  either (\e -> print $ "Error: " ++ e) print $ do
+  either (\e -> putStrLn $ "Error: " ++ e) putStrLn $ do
     (pbKnife, pbEmpty) <- knife `Knife.loadFrom` Condiment.openJar pb
     (usedKnife1, surface1) <- Bread.smearSurface pbKnife . Bread.top . head $ bread
     (jellyKnife, jellyEmpty) <- knife `Knife.loadFrom` Condiment.openJar jelly
