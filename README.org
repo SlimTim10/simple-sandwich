@@ -1,0 +1,23 @@
+* A Simple Sandwich
+
+Inspired by https://neckdeep.dev/blog/2022-12-13-a-simple-sandwich-i/
+
+** Haskell, OOP translation
+
+Run continuously with ~dev.sh~, or one-shot with ~run.sh~.
+
+*** Thoughts
+
+I don't understand this definition of a sandwich.
+
+What does it mean to have a sandwich that is not built? That sounds like something that is NOT a sandwich, which shouldn't be part of the definition of what IS a sandwich. In this definition, a sandwich is allowed to have any number of slices. Wouldn't it make more sense for a sandwich to require at least two slices of bread? Or, even more accurate, a sandwich requires exactly two slices of bread (any inner slices of bread can be considered part of the sandwich, unless that's all it has, in which case it is a loaf). The way I see it, it's part-way to an accurate definition of a sandwich, but stopped short.
+
+Instead of handling possible errors that could arise at every step of the way, we can avoid those possibilities altogether by using type-safe definitions. A sandwich can only be made when its type is fulfilled.
+
+In the video, the kids are frustrated because their father is failing in ways they didn't expect him to fail. He's doing things they didn't want him to do. On the computer, why would we program the ability to do things we don't want to happen? We don't want it to be possible to attempt to put a knife in a closed jar, so we shouldn't make a function where that can happen. Type systems help us resolve this.
+
+** Haskell, idiomatic solution
+
+** Haskell, type-safe solution
+
+** Agda
