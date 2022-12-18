@@ -60,20 +60,20 @@ fetchSliceOfBread flavour = SliceOfBread
   , sobBottom = Nothing
   }
 
-data Side = Top | Bottom
+data Surface = Top | Bottom
   deriving (Show, Eq)
 
-smearSliceOfBread :: Utensil -> Side -> SliceOfBread -> Either String (SliceOfBread, Utensil)
-smearSliceOfBread u side slice
+smearSliceOfBread :: Utensil -> Surface -> SliceOfBread -> Either String (SliceOfBread, Utensil)
+smearSliceOfBread u surface slice
   | uShape u /= Knife = Left "You can't smear with that!"
   | uCondiment u == Nothing = Left "This knife is too clean to smear with."
-  | side == Top && sobTop slice /= Nothing = Left "This surface was already smeared!"
-  | side == Bottom && sobBottom slice /= Nothing = Left "This surface was already smeared!"
+  | surface == Top && sobTop slice /= Nothing = Left "This surface was already smeared!"
+  | surface == Bottom && sobBottom slice /= Nothing = Left "This surface was already smeared!"
   | otherwise = Right (smearedSlice, cleanUtensil)
   where
     smearedSlice
-      | side == Top = slice { sobTop = uCondiment u }
-      | side == Bottom = slice { sobBottom = uCondiment u }
+      | surface == Top = slice { sobTop = uCondiment u }
+      | surface == Bottom = slice { sobBottom = uCondiment u }
     cleanUtensil = u { uCondiment = Nothing}
 
 data Sandwich = Sandwich
