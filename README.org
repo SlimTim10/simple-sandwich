@@ -8,7 +8,7 @@ Run continuously with ~dev.sh~, or one-shot with ~run.sh~.
 
 *** Notes
 
-I don't understand this definition of a sandwich.
+I think there's a problem with this definition of a sandwich.
 
 What does it mean to have a sandwich that is not built? That sounds like something that is NOT a sandwich, which shouldn't be part of the definition of what IS a sandwich. In this definition, a sandwich is allowed to have any number of slices. Wouldn't it make more sense for a sandwich to require at least two slices of bread? Or, even more accurate, a sandwich requires exactly two slices of bread (any inner slices of bread can be considered part of the sandwich, unless that's all it has, in which case it is a loaf). The way I see it, it's part-way to an accurate definition of a sandwich, but stopped short.
 
