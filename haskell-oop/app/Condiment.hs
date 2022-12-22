@@ -6,20 +6,18 @@ data OpenOrClosed = Open | Closed
   deriving (Eq)
 
 data Jar = Jar
-  { condiment :: Condiment
+  { contents :: Maybe Condiment
   , lid :: OpenOrClosed
-  , empty :: Bool
   }
 
 newJar :: Condiment -> Jar
 newJar c = Jar
-  { condiment = c
+  { contents = Just c
   , lid = Closed
-  , empty = False
   }
 
 isEmpty :: Jar -> Bool
-isEmpty Jar{empty=True} = True
+isEmpty Jar{contents=Nothing} = True
 isEmpty _ = False
 
 hasStuff :: Jar -> Bool
@@ -39,7 +37,7 @@ openJar :: Jar -> Jar
 openJar cj = cj {lid=Open}
 
 relinquishContents :: Jar -> Either String (Jar, Condiment)
-relinquishContents cj
+relinquishContents cj@Jar{contents=Just c}
   | isClosed cj = Left "The jar is closed and knife-impermeable."
   | isEmpty cj = Left "The jar is empty. How disappointing."
-  | otherwise = Right (cj{empty=True}, condiment cj)
+  | otherwise = Right (cj{contents=Nothing}, c)
