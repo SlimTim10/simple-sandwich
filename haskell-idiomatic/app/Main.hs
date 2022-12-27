@@ -105,12 +105,12 @@ main = do
   let jelly = fetchCondimentJar Jelly
 
   -- First attempt. Didn't open the jar of peanut butter.
-  either (\e -> putStrLn $ "Error: " ++ e) putStrLn $ do
+  either printError putStrLn $ do
     (pbKnife, emptyPB) <- knife `loadFrom` pb -- Problem
     return "Sandwich made!"
 
   -- Next attempt. Too plain.
-  either (\e -> putStrLn $ "Error: " ++ e) putStrLn $ do
+  either printError putStrLn $ do
     (pbKnife, emptyPB) <- knife `loadFrom` openJar pb
     (jellyKnife, emptyJelly) <- knife `loadFrom` openJar jelly
     let bottomSlice = fetchSliceOfBread Sourdough
@@ -119,7 +119,7 @@ main = do
     return "Sandwich made!"
 
   -- Successful sandwich making!
-  either (\e -> putStrLn $ "Error: " ++ e) putStrLn $ do
+  either printError putStrLn $ do
     (pbKnife, emptyPB) <- knife `loadFrom` openJar pb
     (jellyKnife, emptyJelly) <- knife `loadFrom` openJar jelly
     let bottomSlice = fetchSliceOfBread Sourdough
@@ -128,3 +128,6 @@ main = do
     (topSliceWithJelly, cleanKnife) <- smearSliceOfBread jellyKnife Bottom topSlice
     sw <- makeSandwich bottomSliceWithPB topSliceWithJelly
     return "Sandwich made!"
+  where
+    printError :: String -> IO ()
+    printError e = putStrLn ("Error: " ++ e)
