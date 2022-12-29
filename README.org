@@ -1,40 +1,17 @@
 * A Simple Sandwich
 
-Inspired by https://neckdeep.dev/blog/2022-12-13-a-simple-sandwich-i/
+This is the accompanying code to the post:
+https://timjohns.ca/a-simple-sandwich-part-i.html
+
+Inspired by Danny Fekete's post: https://neckdeep.dev/blog/2022-12-13-a-simple-sandwich-i/
 
 ** Haskell, OOP translation
 
 Run continuously with ~dev.sh~, or one-shot with ~run.sh~.
 
-*** Notes
-
-I think there's a problem with this definition of a sandwich.
-
-What does it mean to have a sandwich that is not built? That sounds like something that is NOT a sandwich, which shouldn't be part of the definition of what IS a sandwich. In this definition, a sandwich is allowed to have any number of slices. Wouldn't it make more sense for a sandwich to require at least two slices of bread? Or, even more accurate, a sandwich requires exactly two slices of bread (any inner slices of bread can be considered part of the sandwich, unless that's all it has, in which case it is a loaf). The way I see it, it's part-way to an accurate definition of a sandwich, but stopped short.
-
-Instead of handling possible errors that could arise at every step of the way, we can avoid those possibilities altogether by using type-safe definitions. A sandwich can only be made when its type is fulfilled.
-
-In the [[https://www.youtube.com/watch?v=FN2RM-CHkuI][video]], the kids are frustrated because their father is failing in ways they didn't expect him to fail. He's doing things they didn't want him to do. On the computer, why would we program the ability to do things we don't want to happen? We don't want it to be possible to attempt to put a knife in a closed jar, so we shouldn't make a function where that can happen. Type systems help us resolve this.
-
-A general comment about OOP code. In the Ruby ~Sandwich~ class, I didn't know what the ~build!~ method was supposed to do when I first saw it. Based on the name, I figured it would build a sandwich and modify the instance. I didn't know if it would also modify something inside the sandwich, like the slices of bread. Without reading the rest of the code, how could I know what else might get modified down the line? To discover the function's purpose and result, I had to read its entire body.
-
-An interesting thought arises about the state of all items involved. For instance, once a knife is obtained and it has been loaded with peanut butter, we should only have one knife which is loaded with peanut butter. But in the Haskell version, after getting a loaded knife, we still have access to the original empty knife. To address this, we could have a state representing all of the items involved, which would have to get threaded through each function and only things from the state could be used.
-
 ** Haskell, idiomatic solution
 
 Run continuously with ~dev.sh~, or one-shot with ~run.sh~.
-
-*** Notes
-
-This version is a more idiomatic Haskell approach. Records are used less freely. There are sum types for the utensil shapes and condiments. There are fewer functions overall, as the OOP translation has many functions which are similar to OOP methods and aren't idiomatic to Haskell.
-
-There are functions to "fetch" items from the kitchen, which act similarly to the "new" functions in the OOP version.
-
-Some of the definitions are different in concept. A sandwich has a top and bottom slice of bread, and it can be cut into multiple pieces. There is also a ~makeSandwich~ function, whose job is to attempt to make a sandwich out of two slices of bread (which are meant to be smeared on their appropriate surfaces). We also have multiple utensil shapes (knife, spoon, and fork) and flavours of bread..
-
-It is still using ~Either~ for error handling, the same as the OOP solution.
-
-There is room for improvement. It is still possible to make a sandwich which should not be considered a sandwich. If we bypass using the ~makeSandwich~ function, we could make a variable of type ~Sandwich~ whose bottom and top are unsmeared. Or whose pieces don't match the flavours of the bottom and top (or no pieces at all!). Along the way, if we don't make use of the proper functions we won't encounter the errors, and we can easily end up with nonsensical items and combinations.
 
 ** Haskell, type-safe solution
 
