@@ -3,12 +3,9 @@
 -- ⊔ "\lub" (least upper bound, basically maximum)
 -- 𝓤 "\MCU"
 open import Agda.Primitive
-  using (Level ; lzero ; lsuc ; _⊔_)
-  renaming (Set to 𝓤)
+  using ()
+  renaming (Set to Type)
   public
-
--- We can use Type or 𝓤 where it makes sense
-Type = Set
 
 -- Empty type
 -- 𝟘 "\b0"
@@ -20,12 +17,9 @@ record 𝟙 : Type where
   constructor
     ⋆
 
--- Let i, j, and k range over universe levels
-variable i j k : Level
-
--- General sigma type with universes
+-- Sigma type (dependent sum)
 -- Σ "\Sigma"
-record Σ {A : 𝓤 i} (B : A → 𝓤 j) : 𝓤 (i ⊔ j) where
+record Σ {A : Type} (B : A → Type) : Type where
   constructor
     _,_
   field
@@ -33,34 +27,30 @@ record Σ {A : 𝓤 i} (B : A → 𝓤 j) : 𝓤 (i ⊔ j) where
     pr₂ : B pr₁
 
 open Σ public
-infixr 1 _,_
+infixr 0 _,_
 
--- i, j, k are not mentioned in the definition, but they are implicit parameters.
--- Everything declared with a variable becomes an implicit parameter, in the order that it is used.
-Sigma : (A : 𝓤 i) (B : A → 𝓤 j) → 𝓤 (i ⊔ j)
-Sigma {i} {j} A B = Σ {i} {j} {A} B
+Sigma : (A : Type) (B : A → Type) → Type
+Sigma A B = Σ {A} B
 
--- Sigma notation
--- ꞉ "\: 4"
+-- ꞉ "\:4"
 syntax Sigma A (λ x → b) = Σ x ꞉ A , b
-
 infix -1 Sigma
 
--- Pi type
+-- Pi type (dependent product)
 Pi : (A : Type) (B : A → Type) → Type
 Pi A B = (x : A) → B x
 
--- For special colon, type "\:4"
+-- ꞉ "\:4"
 syntax Pi A (λ x → b) = Π x ꞉ A , b
 
--- Conjunction
+-- Non-dependent pair, AKA cartesian product, AKA conjunction
 -- × "\x"
-_×_ : 𝓤 i → 𝓤 j → 𝓤 (i ⊔ j)
+_×_ : Type → Type → Type
 A × B = Σ x ꞉ A , B
 
 infixr 2 _×_
 
--- Disjunction
+-- Binary sum, AKA disjoint union, AKA disjunction
 -- ∔ "\.+"
 data _∔_ (A B : Type) : Type where
   inl : A → A ∔ B
@@ -70,32 +60,37 @@ infixr 20 _∔_
 
 -- Negation
 -- ¬ "\neg"
-¬_ : 𝓤 i → 𝓤 i
+¬_ : Type → Type
 ¬ A = A → 𝟘
+
+infix 1000 ¬_
 
 -- Identity
 -- ≡ "\=="
-data _≡_ {X : 𝓤 i} : X → X → 𝓤 i where
-  refl : (x : X) → x ≡ x
+data _≡_ {A : Type} : A → A → Type where
+  refl : (x : A) → x ≡ x
 
 infix 0 _≡_
 
 -- ≢ "\==n"
-_≢_ : {X : 𝓤 i} → X → X → 𝓤 i
+_≢_ : {X : Type} → X → X → Type
 x ≢ y = ¬ (x ≡ y)
 
--- \bN
+-- Natural numbers
+-- ℕ "\bN"
 data ℕ : Type where
   zero : ℕ
   suc : ℕ → ℕ
 
 {-# BUILTIN NATURAL ℕ #-}
 
+-- ≤ "\<="
 _≤_ : ℕ → ℕ → Type
 0 ≤ y = 𝟙
 suc x ≤ 0 = 𝟘
 suc x ≤ suc y = x ≤ y
 
+-- ≥ "\>="
 _≥_ : ℕ → ℕ → Type
 x ≥ y = y ≤ x
 
@@ -103,22 +98,28 @@ module _
   {A : Type}
   {B : A → Type}
   where
-  
-  _∼_ : ((x : A) → B x) → ((x : A) → B x) → Type
+
+  -- Homotopy
+  _∼_ : (Π x ꞉ A , B x) → (Π x ꞉ A , B x) → Type
   f ∼ g = Π x ꞉ A , (f x ≡ g x)
+  -- _∼_ : ((x : A) → B x) → ((x : A) → B x) → Type
   -- f ∼ g = ∀ x → f x ≡ g x
 
   infix 0 _∼_ -- low precedence
 
-_∘_ : {A B : Type} {C : B → Type}
-  → ((y : B) → C y)
+-- Function composition
+-- ∘ "\o"
+_∘_
+  : {A B : Type} {C : B → Type}
+  → (Π y ꞉ B , C y)
   → (f : A → B)
-  → (x : A) → C (f x)
-g ∘ f = λ x → g (f x)
+  → Π x ꞉ A , C (f x)
+(g ∘ f) x = g (f x)
 
 id : {X : Type} → X → X
 id x = x
 
+-- Isomorphism
 record is-bijection {A B : Type} (f : A → B) : Type where
   constructor
     Inverse
