@@ -145,8 +145,6 @@ loadFrom''
       × (state ≡ open'))
   → Σ ((s' , loadedWith') , (c' , state')) ꞉ Utensil × CondimentJar
     , (s' ≡ knife) -- Same shape
-      -- × (is-just' loadedWith') -- Loaded with condiment
-      -- × (loadedWith' ≡ map (λ x → {!isKnife!} , x) c') -- Loaded with condiment
       × (c ≡ map pr₂ loadedWith') -- Loaded with condiment from jar
       × (state' ≡ state) -- State unchanged (still open)
       × (is-nothing' c') -- Now empty
@@ -155,11 +153,7 @@ loadFrom''
   = ((s , loadedWith') , (nothing , state)) , (isKnife , isLoaded' , refl state , refl)
   where
     loadedWith' : Maybe (((s ≡ knife) × Condiment))
-    -- loadedWith' = just (isKnife , fromMaybe peanutButter c) -- should be loaded with the condiment from the jar
     loadedWith' = map (λ x → isKnife , x) c
-
-    -- isLoaded' : is-just' loadedWith'
-    -- isLoaded' = λ ()
 
     isLoaded' : c ≡ map pr₂ loadedWith'
     isLoaded' = lemma1 c
