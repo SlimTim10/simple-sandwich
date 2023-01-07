@@ -110,9 +110,9 @@ fetchCondimentJar c = ((just c , closed) , (refl (just c) , refl closed))
 pr₂-inv : {A B : Type} {b : B} → (pr₂ ∘ (λ (a : A) → b , a)) ∼ id
 pr₂-inv = refl
 
-lemma1 : {A B : Type} {b : B} (ma : Maybe A) → ma ≡ map pr₂ (map (λ (a : A) → b , a) ma)
-lemma1 {A} {B} {b} (just x) = refl (just x)
-lemma1 {A} {B} {b} nothing = refl nothing
+map-inv : {A B : Type} {b : B} (ma : Maybe A) → ma ≡ map pr₂ (map (λ (a : A) → b , a) ma)
+map-inv {A} {B} {b} (just x) = refl (just x)
+map-inv {A} {B} {b} nothing = refl nothing
 
 -- Load a clean knife with a condiment from a jar that is open and full.
 -- Take a utensil that is a knife and clean.
@@ -138,7 +138,7 @@ loadFrom
     loadedWith' = map (λ x → isKnife , x) c
 
     isLoaded' : c ≡ map pr₂ loadedWith'
-    isLoaded' = lemma1 c
+    isLoaded' = map-inv c
 
 -- Open a condiment jar.
 openJar
@@ -153,36 +153,66 @@ fetchSliceOfBread
   → Σ (f' , t , b) ꞉ SliceOfBread , (f ≡ f') × (t ≡ nothing) × (b ≡ nothing)
 fetchSliceOfBread f = ((f , nothing , nothing) , refl f , refl nothing , refl nothing)
 
--- smearSliceOfBread
---   : (((_ , loadedWith) , _) : Σ (u , loadedWith) ꞉ Utensil , (u ≡ knife) × (loadedWith ≢ nothing))
---   → (s : Surface)
---   → (((f , _ , _) , _) :
---     Σ (f , t , b) ꞉ SliceOfBread , ((s ≡ top) × (t ≡ nothing)) ∔ ((s ≡ bottom) × (b ≡ nothing)))
---   → (Σ (f' , t' , b') ꞉ SliceOfBread , (f' ≡ f) × ((s ≡ top) × (t' ≡ just loadedWith)))
---     × Utensil
--- smearSliceOfBread u surface slice = {!!}
+-- Smear a slice of bread with a knife loaded with a condiment.
+-- Take a knife that is loaded with a condiment.
+-- Take a surface (top or bottom).
+-- Take a slice of bread that is not already smeared on the specified surface.
+-- Return the slice of bread with nothing changed but the smeared surface,
+--   and the knife, now unloaded.
+smearSliceOfBread
+  : (((s , loadedWith) , (isKnife , isLoaded)) :
+    Σ (s , loadedWith) ꞉ Utensil , (s ≡ knife) × (is-just loadedWith))
+  → (sur : Surface)
+  → (((f , t , b) , _) :
+    Σ (f , t , b) ꞉ SliceOfBread , ((sur ≡ top) × is-nothing t) ∔ ((sur ≡ bottom) × is-nothing b))
+  → Σ ((f' , t' , b') , (s' , loadedWith')) ꞉ SliceOfBread × Utensil
+    , (f' ≡ f) -- Same flavour
+      × (
+        -- Smear the top
+        ((sur ≡ top)
+          × (t' ≡ map pr₂ loadedWith) -- Top of slice is smeared with condiment from knife
+          × (b' ≡ b)) -- Bottom unchanged
+        ∔
+        -- Smear the bottom
+        ((sur ≡ bottom)
+          × (b' ≡ map pr₂ loadedWith) -- Bottom of slice is smeared with condiment from knife
+          × (t' ≡ t))) -- Top unchanged
+      × (s' ≡ s) -- Same shape utensil
+      × (is-nothing loadedWith') -- Unloaded utensil
 
 smearSliceOfBread
-  : Σ (u , loadedWith) ꞉ Utensil , (u ≡ knife) × (loadedWith ≢ nothing)
-  → (s : Surface)
-  → Σ (f , t , b) ꞉ SliceOfBread , ((s ≡ top) × (t ≡ nothing)) ∔ ((s ≡ bottom) × (b ≡ nothing))
-  → SliceOfBread × Utensil
-smearSliceOfBread
-  ((u , loadedWith) , _)
-  s
+  ((s , loadedWith) , isKnife , isLoaded)
+  top
   ((f , t , b) , _)
-  = smearSurface s
+  = ((f , t' , b) , (s , loadedWith')) , (refl f , (smearTop , refl s , refl))
   where
-    smearSurface : Surface → SliceOfBread × Utensil
-    smearSurface top = ((f , map pr₂ loadedWith , b) , (u , nothing))
-    smearSurface bottom = ((f , t , map pr₂ loadedWith) , (u , nothing))
+    t' : Maybe Condiment
+    t' = map pr₂ loadedWith
+
+    loadedWith' : Maybe ((s ≡ knife) × Condiment)
+    loadedWith' = nothing
+
+    smearTop = inl (refl top , refl t' , refl b)
+
+smearSliceOfBread
+  ((s , loadedWith) , isKnife , isLoaded)
+  bottom
+  ((f , t , b) , _)
+  = ((f , t , b') , (s , loadedWith')) , (refl f , (smearBottom , refl s , refl))
+  where
+    b' : Maybe Condiment
+    b' = map pr₂ loadedWith
+
+    loadedWith' : Maybe ((s ≡ knife) × Condiment)
+    loadedWith' = nothing
+
+    smearBottom = inr (refl bottom , (refl b' , refl t))
 
 smearExample1 : SliceOfBread × Utensil
-smearExample1 = smearSliceOfBread pbKnife top bottomSlice
+smearExample1 = pr₁ (smearSliceOfBread pbKnife top bottomSlice)
   where
-    pbKnife = (knife , just (refl knife , peanutButter)) , refl knife , (λ ())
-    bottomSlice = (sourdough , nothing , nothing) , inl (refl top , refl nothing)
-
+    pbKnife = (knife , just (refl knife , peanutButter)) , refl knife , ((refl knife , peanutButter) , refl)
+    bottomSlice = (sourdough , (nothing , nothing)) , inl (refl top , refl)
 
 sandwichAttempt1 : Sandwich
 sandwichAttempt1 = {!!}
