@@ -2,6 +2,7 @@
 
 open import Util
 open import Maybe
+  renaming (_≡_ to _≗_)
 
 data Surface : Type where
   top bottom : Surface
@@ -94,17 +95,84 @@ data OpenOrClosed : Type where
   open' closed : OpenOrClosed
 
 CondimentJar : Type
-CondimentJar = Condiment × OpenOrClosed
+CondimentJar = Maybe Condiment × OpenOrClosed
 
 -- fetchCondimentJar
 --   : (c : Condiment)
---   → (Σ (c' , oc) ꞉ CondimentJar , (c' ≡ c) × (oc ≡ open'))
--- fetchCondimentJar c = ((c , open') , (refl c , refl open'))
+--   → (Σ (c' , oc) ꞉ CondimentJar , (c' ≡ just c) × (oc ≡ closed))
+-- fetchCondimentJar c = ((just c , closed) , (refl (just c) , refl closed))
 
 fetchCondimentJar
   : Condiment
   → CondimentJar
-fetchCondimentJar c = (c , open')
+fetchCondimentJar c = (just c , closed)
+
+loadFrom'
+  : (((s , loadedWith) , (isKnife , notLoaded)) :
+    Σ (s , loadedWith) ꞉ Utensil , (s ≡ knife) × (loadedWith ≡ nothing))
+  → (((c , state) , (isFull , isOpen)) :
+    Σ (c , state) ꞉ CondimentJar , (c ≢ nothing) × (state ≡ open'))
+  → Σ ((s' , loadedWith') , (c' , state')) ꞉ Utensil × CondimentJar
+    , (s' ≡ s) -- Same shape
+      × (loadedWith' ≢ nothing) -- Loaded with condiment
+      × (state' ≡ state) -- State unchanged (still open)
+      × (c' ≡ nothing) -- Now empty
+loadFrom'
+  ((s , loadedWith) , (isKnife , notLoaded))
+  ((c , state) , (isFull , isOpen))
+  = ((s , loadedWith') , (nothing , state)) , (refl s , (isLoaded , refl state , refl nothing))
+  where
+    loadedWith' : Maybe (((s ≡ knife) × Condiment))
+    -- loadedWith' = map (λ x → isKnife , x) c
+    loadedWith' = {!!}
+
+    isLoaded : loadedWith' ≢ nothing
+    isLoaded = {!!}
+
+pr₂-inv : {A B : Type} {b : B} → (pr₂ ∘ (λ (a : A) → b , a)) ∼ id
+pr₂-inv = refl
+
+lemma1 : {A B : Type} {b : B} (ma : Maybe A) → ma ≡ map pr₂ (map (λ (a : A) → b , a) ma)
+lemma1 {A} {B} {b} (just x) = refl (just x)
+lemma1 {A} {B} {b} nothing = refl nothing
+
+loadFrom''
+  : ((((s , loadedWith) , (c , state)) , (isKnife , notLoaded , isFull , isOpen)) :
+    Σ ((s , loadedWith) , (c , state)) ꞉ Utensil × CondimentJar
+    , (s ≡ knife)
+      × (is-nothing' loadedWith)
+      × (is-just' c)
+      × (state ≡ open'))
+  → Σ ((s' , loadedWith') , (c' , state')) ꞉ Utensil × CondimentJar
+    , (s' ≡ knife) -- Same shape
+      -- × (is-just' loadedWith') -- Loaded with condiment
+      -- × (loadedWith' ≡ map (λ x → {!isKnife!} , x) c') -- Loaded with condiment
+      × (c ≡ map pr₂ loadedWith') -- Loaded with condiment from jar
+      × (state' ≡ state) -- State unchanged (still open)
+      × (is-nothing' c') -- Now empty
+loadFrom''
+  (((s , loadedWith) , (c , state)) , (isKnife , notLoaded , isFull , isOpen))
+  = ((s , loadedWith') , (nothing , state)) , (isKnife , isLoaded' , refl state , refl)
+  where
+    loadedWith' : Maybe (((s ≡ knife) × Condiment))
+    -- loadedWith' = just (isKnife , fromMaybe peanutButter c) -- should be loaded with the condiment from the jar
+    loadedWith' = map (λ x → isKnife , x) c
+
+    -- isLoaded' : is-just' loadedWith'
+    -- isLoaded' = λ ()
+
+    isLoaded' : c ≡ map pr₂ loadedWith'
+    isLoaded' = lemma1 c
+
+-- Load a clean knife with a condiment from a jar that is open and full.
+loadFrom
+  : Σ (s , loadedWith) ꞉ Utensil , (s ≡ knife) × (loadedWith ≡ nothing)
+  → Σ (c , state) ꞉ CondimentJar , (c ≢ nothing) × (state ≡ open')
+  → Utensil × CondimentJar
+loadFrom
+  ((s , loadedWith) , isKnife , notLoaded)
+  ((c , state) , isFull , isOpen)
+  = (s , map (λ c → (isKnife , c)) c) , (nothing , state)
 
 -- openJar
 --   : ((c , state) : CondimentJar)
@@ -113,7 +181,7 @@ fetchCondimentJar c = (c , open')
 
 openJar
   : CondimentJar
-  → Σ (_ , state') ꞉ CondimentJar , (state' ≡ open')
+  → Σ (_ , state) ꞉ CondimentJar , (state ≡ open')
 openJar (c , state) = ((c , open') , refl open')
 
 -- fetchSliceOfBread
@@ -163,3 +231,5 @@ sandwichAttempt1 = {!!}
     myKnife = fetchUtensil knife
     pb = fetchCondimentJar peanutButter
     j = fetchCondimentJar jelly
+
+    -- (pbKnife, emptyPB) = 

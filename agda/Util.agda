@@ -136,4 +136,3 @@ record _≅_ (A B : Type) : Type where
     bijectivity : is-bijection bijection
 
 infix 0 _≅_
-
