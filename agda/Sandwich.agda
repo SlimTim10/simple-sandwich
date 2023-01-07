@@ -121,14 +121,14 @@ lemma1 {A} {B} {b} nothing = refl nothing
 --   and the condiment jar, still open but now empty.
 loadFrom
   : (((s , loadedWith) , (isKnife , notLoaded)) :
-    Σ (s , loadedWith) ꞉ Utensil , (s ≡ knife) × (is-nothing' loadedWith))
+    Σ (s , loadedWith) ꞉ Utensil , (s ≡ knife) × (is-nothing loadedWith))
   → (((c , state) , (isFull , isOpen)) :
-    Σ (c , state) ꞉ CondimentJar , (is-just' c) × (state ≡ open'))
+    Σ (c , state) ꞉ CondimentJar , (is-just c) × (state ≡ open'))
   → Σ ((s' , loadedWith') , (c' , state')) ꞉ Utensil × CondimentJar
     , (s' ≡ s) -- Same shape
       × (c ≡ map pr₂ loadedWith') -- Loaded with condiment from jar
       × (state' ≡ state) -- State unchanged (still open)
-      × (is-nothing' c') -- Now empty
+      × (is-nothing c') -- Now empty
 loadFrom
   ((s , loadedWith) , (isKnife , notLoaded))
   ((c , state) , (isFull , isOpen))
