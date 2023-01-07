@@ -44,9 +44,9 @@ SliceOfBread : Type
 SliceOfBread =
   BreadFlavour
   -- × Condiment ∔ 𝟙
-  × Maybe Condiment
+  × Maybe Condiment -- Top side
   -- × Condiment ∔ 𝟙
-  × Maybe Condiment
+  × Maybe Condiment -- Bottom side
 
 -- A sandwich consists of a top and bottom (slices of bread). Neither the top or bottom can be smeared on the outside. The bottom and top must not both be unsmeared on the inside. The sandwich may be in one or more pieces (i.e., it can be cut).
 Sandwich : Type
@@ -71,7 +71,6 @@ data UtensilShape : Type where
 
 -- A utensil has a shape and may be loaded with a condiment (if it is the right shape).
 Utensil : Type
--- Utensil = UtensilShape × Condiment
 Utensil = Σ shape ꞉ UtensilShape , Maybe ((shape ≡ knife) × Condiment)
 
 knifeExample1 : Utensil
@@ -88,8 +87,12 @@ open Utensil'
 knifeExample1' : Utensil'
 knifeExample1' = utensil knife (just (refl knife , peanutButter))
 
-fetchUtensil : UtensilShape → Utensil
-fetchUtensil shape = (shape , nothing)
+-- Fetch a utensil of a specified shape.
+-- The returned utensil should be the specified shape, not just any utensil.
+fetchUtensil
+  : (s : UtensilShape)
+  → Σ (s' , _) ꞉ Utensil , s' ≡ s
+fetchUtensil shape = (shape , nothing) , (refl shape)
 
 data OpenOrClosed : Type where
   open' closed : OpenOrClosed
@@ -97,15 +100,12 @@ data OpenOrClosed : Type where
 CondimentJar : Type
 CondimentJar = Maybe Condiment × OpenOrClosed
 
--- fetchCondimentJar
---   : (c : Condiment)
---   → (Σ (c' , oc) ꞉ CondimentJar , (c' ≡ just c) × (oc ≡ closed))
--- fetchCondimentJar c = ((just c , closed) , (refl (just c) , refl closed))
-
+-- Fetch a jar of a given condiment.
+-- The returned jar should contain the specified condiment and be closed.
 fetchCondimentJar
-  : Condiment
-  → CondimentJar
-fetchCondimentJar c = (just c , closed)
+  : (c : Condiment)
+  → Σ (c' , oc) ꞉ CondimentJar , (c' ≡ just c) × (oc ≡ closed)
+fetchCondimentJar c = ((just c , closed) , (refl (just c) , refl closed))
 
 pr₂-inv : {A B : Type} {b : B} → (pr₂ ∘ (λ (a : A) → b , a)) ∼ id
 pr₂-inv = refl
@@ -140,25 +140,18 @@ loadFrom
     isLoaded' : c ≡ map pr₂ loadedWith'
     isLoaded' = lemma1 c
 
--- openJar
---   : ((c , state) : CondimentJar)
---   → Σ (c' , state') ꞉ CondimentJar , (c' ≡ c) × (state' ≡ open')
--- openJar (c , state) = ((c , open') , refl c , refl open')
-
+-- Open a condiment jar.
 openJar
-  : CondimentJar
-  → Σ (_ , state) ꞉ CondimentJar , (state ≡ open')
-openJar (c , state) = ((c , open') , refl open')
+  : ((c , state) : CondimentJar)
+  → Σ (c' , state') ꞉ CondimentJar , (c' ≡ c) × (state' ≡ open')
+openJar (c , state) = ((c , open') , refl c , refl open')
 
--- fetchSliceOfBread
---   : (f : BreadFlavour)
---   → Σ (f' , t , b) ꞉ SliceOfBread , (f ≡ f') × (t ≡ nothing) × (b ≡ nothing)
--- fetchSliceOfBread f = ((f , nothing , nothing) , refl f , refl nothing , refl nothing)
-
+-- Fetch a slice of bread of a specified flavour.
+-- The returned slice should be the specified flavour and be unsmeared on both sides.
 fetchSliceOfBread
-  : BreadFlavour
-  → SliceOfBread
-fetchSliceOfBread f = (f , nothing , nothing)
+  : (f : BreadFlavour)
+  → Σ (f' , t , b) ꞉ SliceOfBread , (f ≡ f') × (t ≡ nothing) × (b ≡ nothing)
+fetchSliceOfBread f = ((f , nothing , nothing) , refl f , refl nothing , refl nothing)
 
 -- smearSliceOfBread
 --   : (((_ , loadedWith) , _) : Σ (u , loadedWith) ꞉ Utensil , (u ≡ knife) × (loadedWith ≢ nothing))
@@ -194,8 +187,8 @@ smearExample1 = smearSliceOfBread pbKnife top bottomSlice
 sandwichAttempt1 : Sandwich
 sandwichAttempt1 = {!!}
   where
-    myKnife = fetchUtensil knife
-    pb = fetchCondimentJar peanutButter
-    j = fetchCondimentJar jelly
+    myKnife = pr₁ (fetchUtensil knife)
+    pb = pr₁ (fetchCondimentJar peanutButter)
+    j = pr₁ (fetchCondimentJar jelly)
 
     -- (pbKnife, emptyPB) = 
