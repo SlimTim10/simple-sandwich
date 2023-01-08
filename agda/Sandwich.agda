@@ -26,11 +26,11 @@ open SliceOfBread'
 
 checkShell : SliceOfBread' → SliceOfBread' → Type
 checkShell
-  (sliceOfBread tsFlavour tsSmearedTop tsSmearedBottom)
-  (sliceOfBread bsFlavour bsSmearedTop bsSmearedBottom)
-  = (tsSmearedTop ≡ nothing)
-    × (bsSmearedBottom ≡ nothing)
-    × ((tsSmearedBottom ≢ nothing) ∔ (bsSmearedTop ≢ nothing))
+  (sliceOfBread tFlavour tSmearedTop tSmearedBottom)
+  (sliceOfBread bFlavour bSmearedTop bSmearedBottom)
+  = (tSmearedTop ≡ nothing)
+    × (bSmearedBottom ≡ nothing)
+    × ((tSmearedBottom ≢ nothing) ∔ (bSmearedTop ≢ nothing))
 
 record Sandwich' : Type where
   constructor sandwich
@@ -48,14 +48,14 @@ SliceOfBread =
   -- × Condiment ∔ 𝟙
   × Maybe Condiment -- Bottom side
 
--- A sandwich consists of a top and bottom (slices of bread). Neither the top or bottom can be smeared on the outside. The bottom and top must not both be unsmeared on the inside. The sandwich may be in one or more pieces (i.e., it can be cut).
+-- A sandwich consists of a top and bottom (slices of bread). Neither the top or bottom can be smeared on the outside. At least one of the bottom or top must be smeared on the inside. The sandwich may be in one or more pieces (i.e., it can be cut).
 Sandwich : Type
 Sandwich = Σ
-  ((tsFlavour , tsSmearedTop , tsSmearedBottom) ,
-    (bsFlavour , bsSmearedTop , bsSmearedBottom)) ꞉ SliceOfBread × SliceOfBread
-  , ((tsSmearedTop ≡ nothing)
-    × (bsSmearedBottom ≡ nothing)
-    × ((tsSmearedBottom ≢ nothing) ∔ (bsSmearedTop ≢ nothing)))
+  ((tFlavour , tSmearedTop , tSmearedBottom) ,
+    (bFlavour , bSmearedTop , bSmearedBottom)) ꞉ SliceOfBread × SliceOfBread
+  , (is-nothing tSmearedTop
+    × is-nothing bSmearedBottom
+    × (is-just tSmearedBottom ∔ is-just bSmearedTop))
   × (Σ n ꞉ ℕ , n ≥ 1)
 
 swExample1 : Sandwich
@@ -63,7 +63,7 @@ swExample1 = (topSlice , bottomSlice) , shellOk , pieces
   where
     topSlice = (sourdough , nothing , just peanutButter)
     bottomSlice = (sourdough , just jelly , nothing)
-    shellOk = (refl nothing , refl nothing , inl λ ())
+    shellOk = (refl , refl , inl (peanutButter , refl))
     pieces = (2 , ⋆)
 
 data UtensilShape : Type where
