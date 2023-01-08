@@ -61,10 +61,10 @@ Sandwich = Σ
 swExample1 : Sandwich
 swExample1 = (topSlice , bottomSlice) , shellOk , pieces
   where
-    topSlice = (sourdough , nothing , just peanutButter)
-    bottomSlice = (sourdough , just jelly , nothing)
-    shellOk = (refl , refl , inl (peanutButter , refl))
-    pieces = (2 , ⋆)
+  topSlice = (sourdough , nothing , just peanutButter)
+  bottomSlice = (sourdough , just jelly , nothing)
+  shellOk = (refl , refl , inl (peanutButter , refl))
+  pieces = (2 , ⋆)
 
 data UtensilShape : Type where
   knife spoon fork : UtensilShape
@@ -134,11 +134,11 @@ loadFrom
   ((c , state) , (isFull , isOpen))
   = ((s , loadedWith') , (nothing , state)) , (refl s , isLoaded' , refl state , refl)
   where
-    loadedWith' : Maybe (((s ≡ knife) × Condiment))
-    loadedWith' = map (λ x → isKnife , x) c
+  loadedWith' : Maybe (((s ≡ knife) × Condiment))
+  loadedWith' = map (λ x → isKnife , x) c
 
-    isLoaded' : c ≡ map pr₂ loadedWith'
-    isLoaded' = map-inv c
+  isLoaded' : c ≡ map pr₂ loadedWith'
+  isLoaded' = map-inv c
 
 -- Open a condiment jar.
 openJar
@@ -186,13 +186,13 @@ smearSliceOfBread
   ((f , t , b) , _)
   = ((f , t' , b) , (s , loadedWith')) , (refl f , (smearTop , refl s , refl))
   where
-    t' : Maybe Condiment
-    t' = map pr₂ loadedWith
+  t' : Maybe Condiment
+  t' = map pr₂ loadedWith
 
-    loadedWith' : Maybe ((s ≡ knife) × Condiment)
-    loadedWith' = nothing
+  loadedWith' : Maybe ((s ≡ knife) × Condiment)
+  loadedWith' = nothing
 
-    smearTop = inl (refl top , refl t' , refl b)
+  smearTop = inl (refl top , refl t' , refl b)
 
 smearSliceOfBread
   ((s , loadedWith) , isKnife , isLoaded)
@@ -200,25 +200,93 @@ smearSliceOfBread
   ((f , t , b) , _)
   = ((f , t , b') , (s , loadedWith')) , (refl f , (smearBottom , refl s , refl))
   where
-    b' : Maybe Condiment
-    b' = map pr₂ loadedWith
+  b' : Maybe Condiment
+  b' = map pr₂ loadedWith
 
-    loadedWith' : Maybe ((s ≡ knife) × Condiment)
-    loadedWith' = nothing
+  loadedWith' : Maybe ((s ≡ knife) × Condiment)
+  loadedWith' = nothing
 
-    smearBottom = inr (refl bottom , (refl b' , refl t))
+  smearBottom = inr (refl bottom , (refl b' , refl t))
 
 smearExample1 : SliceOfBread × Utensil
 smearExample1 = pr₁ (smearSliceOfBread pbKnife top bottomSlice)
   where
-    pbKnife = (knife , just (refl knife , peanutButter)) , refl knife , ((refl knife , peanutButter) , refl)
-    bottomSlice = (sourdough , (nothing , nothing)) , inl (refl top , refl)
+  pbKnife = (knife , just (refl knife , peanutButter)) , refl knife , ((refl knife , peanutButter) , refl)
+  bottomSlice = (sourdough , (nothing , nothing)) , inl (refl top , refl)
 
+-- Forgot to open pb jar
 sandwichAttempt1 : Sandwich
 sandwichAttempt1 = {!!}
   where
+  -- Not possible because the pb jar isn't open
+  step1 = loadFrom (myKnife , (refl knife , refl)) (pb , ((peanutButter , refl) , {!!}))
+    where
+    myKnife = pr₁ (fetchUtensil knife)
+    pb = pr₁ (fetchCondimentJar peanutButter)
+    j = pr₁ (fetchCondimentJar jelly)
+        
+  topSlice = pr₁ (fetchSliceOfBread wholeGrain)
+  bottomSlice = pr₁ (fetchSliceOfBread sourdough)
+
+-- Too plain. Tried to use slices without spreading condiments on them.
+sandwichAttempt2 : Sandwich
+sandwichAttempt2 = (topSlice , bottomSlice) , ((refl , (refl , {!!})) , 1 , ⋆)
+  where
+  topSlice = pr₁ (fetchSliceOfBread wholeGrain)
+  bottomSlice = pr₁ (fetchSliceOfBread sourdough)
+    
+  step1 = loadFrom (myKnife , refl knife , refl) (pr₁ (openJar pb) , (peanutButter , refl) , refl open')
+    where
     myKnife = pr₁ (fetchUtensil knife)
     pb = pr₁ (fetchCondimentJar peanutButter)
     j = pr₁ (fetchCondimentJar jelly)
 
-    -- (pbKnife, emptyPB) = 
+  pbKnife : Utensil
+  pbKnife = pr₁ (pr₁ step1)
+  emptyPB : CondimentJar
+  emptyPB = pr₂ (pr₁ step1)
+
+-- Successful sandwich making!
+sandwichAttempt3 : Sandwich
+sandwichAttempt3 = (topSliceWithJelly , bottomSliceWithPB) , ((refl , (refl , (inl (jelly , refl)))) , (1 , ⋆))
+  where
+  step1 : Σ _ ꞉ Utensil × CondimentJar , _
+  step1 =
+    let
+      newKnife = pr₁ (fetchUtensil knife)
+      pb = pr₁ (fetchCondimentJar peanutButter)
+    in loadFrom (newKnife , refl knife , refl) (pr₁ (openJar pb) , (peanutButter , refl) , refl open')
+
+  step2 : Σ _ ꞉ SliceOfBread × Utensil , _
+  step2 =
+    let
+      bottomSlice = pr₁ (fetchSliceOfBread sourdough)
+      pbKnife = pr₁ (pr₁ step1)
+      emptyPB = pr₂ (pr₁ step1)
+    in
+      smearSliceOfBread
+      (pbKnife , (refl (pr₁ pbKnife)) , ((refl (pr₁ pbKnife)) , peanutButter) , refl)
+      top
+      (bottomSlice , (inl (refl top , refl)))
+
+  bottomSliceWithPB : SliceOfBread
+  bottomSliceWithPB = pr₁ (pr₁ step2)
+  
+  step3 : Σ _ ꞉ SliceOfBread × Utensil , _
+  step3 =
+    let
+      jellyKnife : Utensil
+      jellyKnife =
+        let
+          usedKnife = pr₂ (pr₁ step2)
+          j = pr₁ (fetchCondimentJar jelly)
+        in pr₁ (pr₁ (loadFrom (usedKnife , (refl knife , refl)) (pr₁ (openJar j) , (jelly , refl) , refl open')))
+      topSlice = pr₁ (fetchSliceOfBread wholeGrain)
+    in
+      smearSliceOfBread
+      (jellyKnife , (refl knife , (refl knife , jelly) , refl))
+      bottom
+      (topSlice , (inr (refl bottom , refl)))
+  
+  topSliceWithJelly : SliceOfBread
+  topSliceWithJelly = pr₁ (pr₁ step3)
