@@ -13,33 +13,6 @@ data Condiment : Type where
 data BreadFlavour : Type where
   sourdough wholeGrain white : BreadFlavour
 
-record SliceOfBread' : Type where
-  constructor sliceOfBread
-  field
-    flavour : BreadFlavour
-    -- smearedTop : Condiment ∔ 𝟙
-    smearedTop : Maybe Condiment
-    -- smearedBottom : Condiment ∔ 𝟙
-    smearedBottom : Maybe Condiment
-
-open SliceOfBread'
-
-checkShell : SliceOfBread' → SliceOfBread' → Type
-checkShell
-  (sliceOfBread tFlavour tSmearedTop tSmearedBottom)
-  (sliceOfBread bFlavour bSmearedTop bSmearedBottom)
-  = (tSmearedTop ≡ nothing)
-    × (bSmearedBottom ≡ nothing)
-    × ((tSmearedBottom ≢ nothing) ∔ (bSmearedTop ≢ nothing))
-
-record Sandwich' : Type where
-  constructor sandwich
-  field
-    topSlice : SliceOfBread'
-    bottomSlice : SliceOfBread'
-    shellOk : checkShell topSlice bottomSlice
-    pieces : Σ n ꞉ ℕ , n ≥ 1
-
 SliceOfBread : Type
 SliceOfBread =
   BreadFlavour
@@ -76,23 +49,12 @@ Utensil = Σ shape ꞉ UtensilShape , Maybe ((shape ≡ knife) × Condiment)
 knifeExample1 : Utensil
 knifeExample1 = (knife , just (refl knife , peanutButter))
 
-record Utensil' : Type where
-  constructor utensil
-  field
-    shape : UtensilShape
-    loadedWith : Maybe ((shape ≡ knife) × Condiment)
-
-open Utensil'
-
-knifeExample1' : Utensil'
-knifeExample1' = utensil knife (just (refl knife , peanutButter))
-
 -- Fetch a utensil of a specified shape.
--- The returned utensil should be the specified shape, not just any utensil.
+-- The returned utensil should be the specified shape (not just any utensil) and not loaded (clean).
 fetchUtensil
   : (s : UtensilShape)
-  → Σ (s' , _) ꞉ Utensil , s' ≡ s
-fetchUtensil shape = (shape , nothing) , (refl shape)
+  → Σ (s' , loadedWith') ꞉ Utensil , (s' ≡ s) × is-nothing loadedWith'
+fetchUtensil shape = (shape , nothing) , (refl shape , refl)
 
 data OpenOrClosed : Type where
   open' closed : OpenOrClosed
@@ -125,7 +87,7 @@ loadFrom
   → (((c , state) , (isFull , isOpen)) :
     Σ (c , state) ꞉ CondimentJar , (is-just c) × (state ≡ open'))
   → Σ ((s' , loadedWith') , (c' , state')) ꞉ Utensil × CondimentJar
-    , (s' ≡ s) -- Same shape
+    , (s' ≡ s) -- Same shape (*the* knife)
       × (c ≡ map pr₂ loadedWith') -- Loaded with condiment from jar
       × (state' ≡ state) -- State unchanged (still open)
       × (is-nothing c') -- Now empty
@@ -150,8 +112,8 @@ openJar (c , state) = ((c , open') , refl c , refl open')
 -- The returned slice should be the specified flavour and be unsmeared on both sides.
 fetchSliceOfBread
   : (f : BreadFlavour)
-  → Σ (f' , t , b) ꞉ SliceOfBread , (f ≡ f') × (t ≡ nothing) × (b ≡ nothing)
-fetchSliceOfBread f = ((f , nothing , nothing) , refl f , refl nothing , refl nothing)
+  → Σ (f' , t , b) ꞉ SliceOfBread , (f ≡ f') × is-nothing t × is-nothing b
+fetchSliceOfBread f = ((f , nothing , nothing) , refl f , refl , refl)
 
 -- Smear a slice of bread with a knife loaded with a condiment.
 -- Take a knife that is loaded with a condiment.
@@ -161,7 +123,7 @@ fetchSliceOfBread f = ((f , nothing , nothing) , refl f , refl nothing , refl no
 --   and the knife, now unloaded.
 smearSliceOfBread
   : (((s , loadedWith) , (isKnife , isLoaded)) :
-    Σ (s , loadedWith) ꞉ Utensil , (s ≡ knife) × (is-just loadedWith))
+    Σ (s , loadedWith) ꞉ Utensil , (s ≡ knife) × is-just loadedWith)
   → (sur : Surface)
   → (((f , t , b) , _) :
     Σ (f , t , b) ꞉ SliceOfBread , ((sur ≡ top) × is-nothing t) ∔ ((sur ≡ bottom) × is-nothing b))
@@ -178,19 +140,16 @@ smearSliceOfBread
           × (b' ≡ map pr₂ loadedWith) -- Bottom of slice is smeared with condiment from knife
           × (t' ≡ t))) -- Top unchanged
       × (s' ≡ s) -- Same shape utensil
-      × (is-nothing loadedWith') -- Unloaded utensil
+      × is-nothing loadedWith' -- Unloaded utensil
 
 smearSliceOfBread
   ((s , loadedWith) , isKnife , isLoaded)
   top
   ((f , t , b) , _)
-  = ((f , t' , b) , (s , loadedWith')) , (refl f , (smearTop , refl s , refl))
+  = ((f , t' , b) , (s , nothing)) , (refl f , (smearTop , refl s , refl))
   where
   t' : Maybe Condiment
   t' = map pr₂ loadedWith
-
-  loadedWith' : Maybe ((s ≡ knife) × Condiment)
-  loadedWith' = nothing
 
   smearTop = inl (refl top , refl t' , refl b)
 
@@ -198,13 +157,10 @@ smearSliceOfBread
   ((s , loadedWith) , isKnife , isLoaded)
   bottom
   ((f , t , b) , _)
-  = ((f , t , b') , (s , loadedWith')) , (refl f , (smearBottom , refl s , refl))
+  = ((f , t , b') , (s , nothing)) , (refl f , (smearBottom , refl s , refl))
   where
   b' : Maybe Condiment
   b' = map pr₂ loadedWith
-
-  loadedWith' : Maybe ((s ≡ knife) × Condiment)
-  loadedWith' = nothing
 
   smearBottom = inr (refl bottom , (refl b' , refl t))
 
@@ -214,7 +170,10 @@ smearExample1 = pr₁ (smearSliceOfBread pbKnife top bottomSlice)
   pbKnife = (knife , just (refl knife , peanutButter)) , refl knife , ((refl knife , peanutButter) , refl)
   bottomSlice = (sourdough , (nothing , nothing)) , inl (refl top , refl)
 
--- Forgot to open pb jar
+-- On to the sandwich-making attempts!
+-- An attempt is only considered successful if it has no holes (otherwise it is incomplete).
+
+-- First attempt. Didn't open the jar of peanut butter.
 sandwichAttempt1 : Sandwich
 sandwichAttempt1 = {!!}
   where
@@ -224,17 +183,17 @@ sandwichAttempt1 = {!!}
     myKnife = pr₁ (fetchUtensil knife)
     pb = pr₁ (fetchCondimentJar peanutButter)
     j = pr₁ (fetchCondimentJar jelly)
-        
+
   topSlice = pr₁ (fetchSliceOfBread wholeGrain)
   bottomSlice = pr₁ (fetchSliceOfBread sourdough)
 
--- Too plain. Tried to use slices without spreading condiments on them.
+-- Next attempt. Too plain. Tried to use slices without spreading condiments on them.
 sandwichAttempt2 : Sandwich
-sandwichAttempt2 = (topSlice , bottomSlice) , ((refl , (refl , {!!})) , 1 , ⋆)
+sandwichAttempt2 = (topSlice , bottomSlice) , (refl , refl , {!!}) , 1 , ⋆
   where
   topSlice = pr₁ (fetchSliceOfBread wholeGrain)
   bottomSlice = pr₁ (fetchSliceOfBread sourdough)
-    
+
   step1 = loadFrom (myKnife , refl knife , refl) (pr₁ (openJar pb) , (peanutButter , refl) , refl open')
     where
     myKnife = pr₁ (fetchUtensil knife)
