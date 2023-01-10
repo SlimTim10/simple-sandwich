@@ -105,7 +105,7 @@ loadFrom
   → ((cj , _) :
     Σ cj ꞉ CondimentJar , is-just (condiment cj) × (state cj ≡ open'))
   → Σ (u' , cj') ꞉ Utensil × CondimentJar
-    , (shape u ≡ shape u') -- Same shape (*the* knife)
+    , (shape u' ≡ shape u) -- Same shape (*the* knife)
       × (condiment cj ≡ map pr₂ (loadedWith u')) -- Loaded with condiment from jar
       × (state cj' ≡ state cj) -- State unchanged (still open)
       × is-nothing (condiment cj') -- Now empty
