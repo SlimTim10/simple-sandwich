@@ -141,27 +141,47 @@ fetchSliceOfBread f = sliceOfBread f nothing nothing , refl f , refl , refl
 -- Take a slice of bread that is not already smeared on the specified surface.
 -- Return the slice of bread with nothing changed but the smeared surface,
 --   and the knife, now unloaded.
+-- smearSliceOfBread
+--   : ((u , _ , _) :
+--     Σ u ꞉ Utensil , (shape u ≡ knife) × is-just (loadedWith u))
+--   → (sur : Surface)
+--   → ((sob , _) :
+--     Σ sob ꞉ SliceOfBread
+--     , ((sur ≡ top) × is-nothing (smearedTop sob))
+--       ∔ ((sur ≡ bottom) × is-nothing (smearedBottom sob)))
+--   → Σ (sob' , u') ꞉ SliceOfBread × Utensil
+--     , (flavour sob' ≡ flavour sob) -- Same flavour
+--       × (
+--         -- Smear the top
+--         ((sur ≡ top)
+--           × (smearedTop sob' ≡ map pr₂ (loadedWith u)) -- Top of slice is smeared with condiment from knife
+--           × (smearedBottom sob' ≡ smearedBottom sob)) -- Bottom unchanged
+--         ∔
+--         -- Smear the bottom
+--         ((sur ≡ bottom)
+--           × (smearedBottom sob' ≡ map pr₂ (loadedWith u)) -- Bottom of slice is smeared with condiment from knife
+--           × (smearedTop sob' ≡ smearedTop sob))) -- Top unchanged
+--         × (shape u' ≡ shape u) -- Same shape utensil
+--         × is-nothing (loadedWith u') -- Unloaded utensil
 smearSliceOfBread
-  : ((u , _ , _) :
-    Σ u ꞉ Utensil , (shape u ≡ knife) × is-just (loadedWith u))
+  : (uₛ : Σ u ꞉ Utensil , (shape u ≡ knife) × is-just (loadedWith u))
   → (sur : Surface)
-  → ((sob , _) :
-    Σ sob ꞉ SliceOfBread
+  → (sobₛ : Σ sob ꞉ SliceOfBread
     , ((sur ≡ top) × is-nothing (smearedTop sob))
       ∔ ((sur ≡ bottom) × is-nothing (smearedBottom sob)))
   → Σ (sob' , u') ꞉ SliceOfBread × Utensil
-    , (flavour sob' ≡ flavour sob) -- Same flavour
+    , (flavour sob' ≡ flavour (pr₁ sobₛ)) -- Same flavour
       × (
         -- Smear the top
         ((sur ≡ top)
-          × (smearedTop sob' ≡ map pr₂ (loadedWith u)) -- Top of slice is smeared with condiment from knife
-          × (smearedBottom sob' ≡ smearedBottom sob)) -- Bottom unchanged
+          × (smearedTop sob' ≡ map pr₂ (loadedWith (pr₁ uₛ))) -- Top of slice is smeared with condiment from knife
+          × (smearedBottom sob' ≡ smearedBottom (pr₁ sobₛ))) -- Bottom unchanged
         ∔
         -- Smear the bottom
         ((sur ≡ bottom)
-          × (smearedBottom sob' ≡ map pr₂ (loadedWith u)) -- Bottom of slice is smeared with condiment from knife
-          × (smearedTop sob' ≡ smearedTop sob))) -- Top unchanged
-        × (shape u' ≡ shape u) -- Same shape utensil
+          × (smearedBottom sob' ≡ map pr₂ (loadedWith (pr₁ uₛ))) -- Bottom of slice is smeared with condiment from knife
+          × (smearedTop sob' ≡ smearedTop (pr₁ sobₛ)))) -- Top unchanged
+        × (shape u' ≡ shape (pr₁ uₛ)) -- Same shape utensil
         × is-nothing (loadedWith u') -- Unloaded utensil
 
 smearSliceOfBread
