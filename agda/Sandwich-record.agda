@@ -100,14 +100,12 @@ map-inv {A} {B} {b} nothing = refl nothing
 -- Return the knife, now loaded with the condiment from the jar,
 --   and the condiment jar, still open but now empty.
 loadFrom
-  : ((u , isKnife , notLoaded) :
-    Σ u ꞉ Utensil , (shape u ≡ knife) × is-nothing (loadedWith u))
-  → ((cj , _) :
-    Σ cj ꞉ CondimentJar , is-just (condiment cj) × (state cj ≡ open'))
+  : (uₛ : Σ u ꞉ Utensil , (shape u ≡ knife) × is-nothing (loadedWith u))
+  → (cjₛ : Σ cj ꞉ CondimentJar , is-just (condiment cj) × (state cj ≡ open'))
   → Σ (u' , cj') ꞉ Utensil × CondimentJar
-    , (shape u' ≡ shape u) -- Same shape (*the* knife)
-      × (condiment cj ≡ map pr₂ (loadedWith u')) -- Loaded with condiment from jar
-      × (state cj' ≡ state cj) -- State unchanged (still open)
+    , (shape u' ≡ shape (pr₁ uₛ)) -- Same shape (*the* knife)
+      × (condiment (pr₁ cjₛ) ≡ map pr₂ (loadedWith u')) -- Loaded with condiment from jar
+      × (state cj' ≡ state (pr₁ cjₛ)) -- State unchanged (still open)
       × is-nothing (condiment cj') -- Now empty
 loadFrom
   (u , isKnife , notLoaded)
