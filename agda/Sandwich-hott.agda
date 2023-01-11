@@ -83,7 +83,7 @@ map-inv {A} {B} {b} nothing = refl nothing
 --   and the condiment jar, still open but now empty.
 loadFrom
   : (uₛ : Σ u ꞉ Utensil , (pr₁ u ≡ knife) × (is-nothing (pr₂ u)))
-  → (cjₛ : Σ cj ꞉ CondimentJar , (is-just (pr₁ cj)) × (pr₂ cj ≡ open'))
+    (cjₛ : Σ cj ꞉ CondimentJar , (is-just (pr₁ cj)) × (pr₂ cj ≡ open'))
   → Σ (u , cj) ꞉ Utensil × CondimentJar
     , (pr₁ u ≡ (pr₁ (pr₁ uₛ))) -- Same shape (*the* knife)
       × (pr₁ (pr₁ cjₛ) ≡ map pr₂ (pr₂ u)) -- Loaded with condiment from jar
@@ -119,31 +119,10 @@ fetchSliceOfBread f = ((f , nothing , nothing) , refl f , refl , refl)
 -- Take a slice of bread that is not already smeared on the specified surface.
 -- Return the slice of bread with nothing changed but the smeared surface,
 --   and the knife, now unloaded.
-
--- smearSliceOfBread
---   : (((s , loadedWith) , (isKnife , isLoaded)) :
---     Σ (s , loadedWith) ꞉ Utensil , (s ≡ knife) × is-just loadedWith)
---   → (sur : Surface)
---   → (((f , t , b) , _) :
---     Σ (f , t , b) ꞉ SliceOfBread , ((sur ≡ top) × is-nothing t) ∔ ((sur ≡ bottom) × is-nothing b))
---   → Σ ((f' , t' , b') , (s' , loadedWith')) ꞉ SliceOfBread × Utensil
---     , (f' ≡ f) -- Same flavour
---       × (
---         -- Smear the top
---         ((sur ≡ top)
---           × (t' ≡ map pr₂ loadedWith) -- Top of slice is smeared with condiment from knife
---           × (b' ≡ b)) -- Bottom unchanged
---         ∔
---         -- Smear the bottom
---         ((sur ≡ bottom)
---           × (b' ≡ map pr₂ loadedWith) -- Bottom of slice is smeared with condiment from knife
---           × (t' ≡ t))) -- Top unchanged
---       × (s' ≡ s) -- Same shape utensil
---       × is-nothing loadedWith' -- Unloaded utensil
 smearSliceOfBread
   : (uₛ : Σ u ꞉ Utensil , (pr₁ u ≡ knife) × is-just (pr₂ u))
-  → (sur : Surface)
-  → (sobₛ : Σ sob ꞉ SliceOfBread
+    (sur : Surface)
+    (sobₛ : Σ sob ꞉ SliceOfBread
     , ((sur ≡ top) × is-nothing (pr₁ (pr₂ sob)))
       ∔ ((sur ≡ bottom) × is-nothing (pr₂ (pr₂ sob))))
   → Σ (sob' , u') ꞉ SliceOfBread × Utensil

@@ -101,7 +101,7 @@ map-inv {A} {B} {b} nothing = refl nothing
 --   and the condiment jar, still open but now empty.
 loadFrom
   : (uₛ : Σ u ꞉ Utensil , (shape u ≡ knife) × is-nothing (loadedWith u))
-  → (cjₛ : Σ cj ꞉ CondimentJar , is-just (condiment cj) × (state cj ≡ open'))
+    (cjₛ : Σ cj ꞉ CondimentJar , is-just (condiment cj) × (state cj ≡ open'))
   → Σ (u' , cj') ꞉ Utensil × CondimentJar
     , (shape u' ≡ shape (pr₁ uₛ)) -- Same shape (*the* knife)
       × (condiment (pr₁ cjₛ) ≡ map pr₂ (loadedWith u')) -- Loaded with condiment from jar
@@ -143,8 +143,8 @@ fetchSliceOfBread f = sliceOfBread f nothing nothing , refl f , refl , refl
 --   and the knife, now unloaded.
 smearSliceOfBread
   : (uₛ : Σ u ꞉ Utensil , (shape u ≡ knife) × is-just (loadedWith u))
-  → (sur : Surface)
-  → (sobₛ : Σ sob ꞉ SliceOfBread
+    (sur : Surface)
+    (sobₛ : Σ sob ꞉ SliceOfBread
     , ((sur ≡ top) × is-nothing (smearedTop sob))
       ∔ ((sur ≡ bottom) × is-nothing (smearedBottom sob)))
   → Σ (sob' , u') ꞉ SliceOfBread × Utensil
