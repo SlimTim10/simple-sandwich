@@ -4,15 +4,19 @@ open import Util
 open import Maybe
   renaming (_≡_ to _≗_)
 
+-- A slice of bread has a top surface and bottom surface.
 data Surface : Type where
   top bottom : Surface
 
+-- We only have peanut butter and jelly in the pantry.
 data Condiment : Type where
   peanutButter jelly : Condiment
 
+-- Self-explanatory flavours of bread. Go for sourdough, it's the best.
 data BreadFlavour : Type where
   sourdough wholeGrain white : BreadFlavour
 
+-- A slice of bread is of a particular flavour and may be smeared with a condiment on the top or bottom (or both).
 record SliceOfBread : Type where
   constructor sliceOfBread
   field
@@ -22,8 +26,11 @@ record SliceOfBread : Type where
     -- smearedBottom : Condiment ∔ 𝟙
     smearedBottom : Maybe Condiment
 
+-- Expose the SliceOfBread's constructor and fields to the rest of the code.
 open SliceOfBread
 
+-- Check that the "shell" of a sandwich is proper. The shell is the top and bottom slices of bread. Neither one should be smeared on the outside and at least one of them should be smeared on the inside.
+-- I couldn't find a way to restrict the scope of this function to Sandwich (like using a "where" clause).
 checkShell : SliceOfBread → SliceOfBread → Type
 checkShell t b =
   is-nothing (smearedTop t)
@@ -39,26 +46,31 @@ record Sandwich : Type where
     shellOk : checkShell topSlice bottomSlice
     pieces : Σ n ꞉ ℕ , n ≥ 1
 
+-- Expose the Sandwich's constructor and fields to the rest of the code.
 open Sandwich
 
+-- An example of a sandwich. This is a sourdough sandwich with peanut butter and jelly, cut into two pieces.
 swExample1 : Sandwich
 swExample1 = sandwich t b (refl , refl , inl (peanutButter , refl)) (2 , ⋆)
   where
   t = sliceOfBread sourdough nothing (just peanutButter)
   b = sliceOfBread sourdough (just jelly) nothing
 
+-- We have knives, spoons, and forks. Chopsticks are too good to be utensils.
 data UtensilShape : Type where
   knife spoon fork : UtensilShape
 
--- A utensil has a shape and may be loaded with a condiment (if it is the right shape).
+-- A utensil has a shape and may be loaded with a condiment (if it is a knife).
 record Utensil : Type where
   constructor utensil
   field
     shape : UtensilShape
     loadedWith : Maybe ((shape ≡ knife) × Condiment)
 
+-- Expose the Utensil's constructor and fields to the rest of the code.
 open Utensil
 
+-- An example of a knife, loaded with peanut butter. Resist the temptation to lick it!
 knifeExample1 : Utensil
 knifeExample1 = utensil knife (just (refl knife , peanutButter))
 
@@ -69,15 +81,18 @@ fetchUtensil
   → Σ u ꞉ Utensil , (shape u ≡ s) × is-nothing (loadedWith u)
 fetchUtensil s = utensil s nothing , refl s , refl
 
+-- A jar can be open or closed.
 data OpenOrClosed : Type where
   open' closed : OpenOrClosed
 
+-- A condiment jar has a condiment inside (or nothing, if it's empty) and is either open or closed.
 record CondimentJar : Type where
   constructor condimentJar
   field
     condiment : Maybe Condiment
     state : OpenOrClosed
 
+-- Expose the CondimentJar's constructor and fields to the rest of the code.
 open CondimentJar
 
 -- Fetch a jar of a given condiment.
@@ -87,12 +102,24 @@ fetchCondimentJar
   → Σ cj ꞉ CondimentJar , (condiment cj ≡ just c) × (state cj ≡ closed)
 fetchCondimentJar c = condimentJar (just c) closed , refl (just c) , refl closed
 
-pr₂-inv : {A B : Type} {b : B} → (pr₂ ∘ (λ (a : A) → b , a)) ∼ id
-pr₂-inv = refl
+-- A Maybe value is left unchanged if we map it to the second value of a pair and project that second value.
+-- Needed to prove this for part of loadFrom (following).
+map-pr₂-pair-refl
+  : {A B : Type} {b : B} (ma : Maybe A)
+  → ma ≡ map pr₂ (map (λ (a : A) → (b , a)) ma)
+map-pr₂-pair-refl {A} {B} {b} (just x) = refl (just x)
+map-pr₂-pair-refl {A} {B} {b} nothing = refl nothing
 
-map-inv : {A B : Type} {b : B} (ma : Maybe A) → ma ≡ map pr₂ (map (λ (a : A) → b , a) ma)
-map-inv {A} {B} {b} (just x) = refl (just x)
-map-inv {A} {B} {b} nothing = refl nothing
+-- Tried to generalize the property. (Didn't end up using this.)
+pr₂-pair-refl : {A B : Type} {b : B} → (pr₂ ∘ (λ (a : A) → (b , a))) ∼ id
+pr₂-pair-refl = refl
+
+-- Another variation.
+map-pr₂-pair-refl'
+  : {A B : Type} {b : B}
+  → map pr₂ ∘ map (λ (a : A) → (b , a)) ∼ id
+map-pr₂-pair-refl' {A} {B} {b} (just x) = refl (just x)
+map-pr₂-pair-refl' {A} {B} {b} nothing = refl nothing
 
 -- Load a clean knife with a condiment from a jar that is open and full.
 -- Take a utensil that is a knife and clean.
@@ -114,10 +141,10 @@ loadFrom
     , refl (shape u) , isLoaded' , refl (state cj) , refl
   where
   loadedWith' : Maybe ((shape u ≡ knife) × Condiment)
-  loadedWith' = map (λ x → isKnife , x) (condiment cj)
+  loadedWith' = map (λ x → (isKnife , x)) (condiment cj)
 
   isLoaded' : condiment cj ≡ map pr₂ loadedWith'
-  isLoaded' = map-inv (condiment cj)
+  isLoaded' = map-pr₂-pair-refl (condiment cj)
 
 -- Open a condiment jar.
 openJar
@@ -162,6 +189,7 @@ smearSliceOfBread
         × (shape u' ≡ shape (pr₁ uₛ)) -- Same shape utensil
         × is-nothing (loadedWith u') -- Unloaded utensil
 
+-- Top smearing.
 smearSliceOfBread
   (u , _)
   top
@@ -174,6 +202,7 @@ smearSliceOfBread
 
   smearTop = inl (refl top , refl t' , refl (smearedBottom sob)) , refl (shape u) , refl
 
+-- Bottom smearing.
 smearSliceOfBread
   (u , _)
   bottom
@@ -186,60 +215,73 @@ smearSliceOfBread
   
   smearBottom = (inr (refl bottom , refl b' , refl (smearedTop sob))) , refl (shape u) , refl
 
+-- A smearing example, where a slice of sourdough bread is smeared with peanut butter on the top.
 smearExample1 : SliceOfBread × Utensil
-smearExample1 = pr₁ (smearSliceOfBread pbKnife top bottomSlice')
+smearExample1 = pr₁ (smearSliceOfBread pbKnife top mySlice)
   where
   pbKnife = (utensil knife (just (refl knife , peanutButter))) , refl knife , (refl knife , peanutButter) , refl
-  bottomSlice' = (sliceOfBread sourdough nothing nothing) , inl (refl top , refl)
+  mySlice = (sliceOfBread sourdough nothing nothing) , inl (refl top , refl)
+
+-- Now onto the best part! Making sandwiches...
 
 -- First attempt. Didn't open the jar of peanut butter.
 sandwichAttempt1 : Sandwich
 sandwichAttempt1 = {!!}
   where
-  -- Not possible because the pb jar isn't open
-  step1 = loadFrom (myKnife , (refl knife , refl)) (pb , ((peanutButter , refl) , {!!}))
-    where
-    myKnife = pr₁ (fetchUtensil knife)
-    pb = pr₁ (fetchCondimentJar peanutButter)
-    j = pr₁ (fetchCondimentJar jelly)
-
-  topSlice' = pr₁ (fetchSliceOfBread wholeGrain)
-  bottomSlice' = pr₁ (fetchSliceOfBread sourdough)
+  -- Get a knife with peanut butter.
+  step1 : Σ _ ꞉ Utensil × CondimentJar , _
+  step1 =
+    let
+      newKnife : Utensil
+      newKnife = pr₁ (fetchUtensil knife)
+      pb : CondimentJar
+      pb = pr₁ (fetchCondimentJar peanutButter)
+    -- Not possible because the pb jar isn't open!
+    in loadFrom (newKnife , (refl knife , refl)) (pb , ((peanutButter , refl) , {!!})) -- closed ≡ open'
 
 -- Next attempt. Too plain. Tried to use slices without spreading condiments on them.
 sandwichAttempt2 : Sandwich
 sandwichAttempt2 = sandwich topSlice' bottomSlice' (refl , refl , {!!}) (1 , ⋆)
   where
+  -- Get a knife with peanut butter.
+  step1 : Σ _ ꞉ Utensil × CondimentJar , _
+  step1 =
+    let
+      newKnife : Utensil
+      newKnife = pr₁ (fetchUtensil knife)
+      pb : CondimentJar
+      pb = pr₁ (fetchCondimentJar peanutButter)
+    in loadFrom (newKnife , (refl knife , refl)) (pr₁ (openJar pb) , ((peanutButter , refl) , refl open'))
+
+  -- Get a couple slices of bread.
+  topSlice' : SliceOfBread
   topSlice' = pr₁ (fetchSliceOfBread wholeGrain)
+  bottomSlice' : SliceOfBread
   bottomSlice' = pr₁ (fetchSliceOfBread sourdough)
-
-  step1 = loadFrom (myKnife , refl knife , refl) (pr₁ (openJar pb) , (peanutButter , refl) , refl open')
-    where
-    myKnife = pr₁ (fetchUtensil knife)
-    pb = pr₁ (fetchCondimentJar peanutButter)
-    j = pr₁ (fetchCondimentJar jelly)
-
-  pbKnife : Utensil
-  pbKnife = pr₁ (pr₁ step1)
-  emptyPB : CondimentJar
-  emptyPB = pr₂ (pr₁ step1)
 
 -- Successful sandwich making!
 sandwichAttempt3 : Sandwich
 sandwichAttempt3 = sandwich topSliceWithJelly bottomSliceWithPB (refl , (refl , inl (jelly , refl))) (1 , ⋆)
   where
+  -- Get a knife with peanut butter.
   step1 : Σ _ ꞉ Utensil × CondimentJar , _
   step1 =
     let
+      newKnife : Utensil
       newKnife = pr₁ (fetchUtensil knife)
+      pb : CondimentJar
       pb = pr₁ (fetchCondimentJar peanutButter)
     in loadFrom (newKnife , refl knife , refl) (pr₁ (openJar pb) , (peanutButter , refl) , refl open')
 
+  -- Get a slice of bread and smear it with the PB knife.
   step2 : Σ _ ꞉ SliceOfBread × Utensil , _
   step2 =
     let
+      bottomSlice : SliceOfBread
       bottomSlice = pr₁ (fetchSliceOfBread sourdough)
+      pbKnife : Utensil
       pbKnife = pr₁ (pr₁ step1)
+      emptyPB : CondimentJar
       emptyPB = pr₂ (pr₁ step1)
     in
       smearSliceOfBread
@@ -247,24 +289,31 @@ sandwichAttempt3 = sandwich topSliceWithJelly bottomSliceWithPB (refl , (refl , 
       top
       (bottomSlice , (inl (refl top , refl)))
 
+  -- Our successfuly smeared slice to be used as the bottom of the sandwich!
   bottomSliceWithPB : SliceOfBread
   bottomSliceWithPB = pr₁ (pr₁ step2)
-  
+
+  -- Get another slice of bread and smear it with jelly, using the same knife as before.
   step3 : Σ _ ꞉ SliceOfBread × Utensil , _
   step3 =
     let
       jellyKnife : Utensil
       jellyKnife =
         let
+          -- The knife is now clean after having spread all its peanut butter on the other slice.
+          usedKnife : Utensil
           usedKnife = pr₂ (pr₁ step2)
+          j : CondimentJar
           j = pr₁ (fetchCondimentJar jelly)
         in pr₁ (pr₁ (loadFrom (usedKnife , (refl knife , refl)) (pr₁ (openJar j) , (jelly , refl) , refl open')))
+      topSlice : SliceOfBread
       topSlice = pr₁ (fetchSliceOfBread wholeGrain)
     in
       smearSliceOfBread
       (jellyKnife , (refl knife , (refl knife , jelly) , refl))
       bottom
       (topSlice , (inr (refl bottom , refl)))
-  
+
+  -- Our successfully smeared slice to be used as the top of the sandwich!
   topSliceWithJelly : SliceOfBread
   topSliceWithJelly = pr₁ (pr₁ step3)
