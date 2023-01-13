@@ -19,7 +19,7 @@ Run continuously with ~dev.sh~, or one-shot with ~run.sh~.
 
 ** Agda
 
-Found in [[./agda][/agda]]. See [[./agda/Sandwich.agda][Sandwich.agda]].
+Found in [[./agda][/agda]]. To browse the code, see [[./agda/html/Sandwich.html][Sandwich.html]].
 
 Run with [[https://agda.readthedocs.io/en/v2.6.2.2/getting-started/installation.html][Agda]]. Tested with Agda version 2.6.2.2.
 

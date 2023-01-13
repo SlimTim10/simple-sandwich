@@ -1,7 +1,5 @@
-{-# OPTIONS --without-K --safe #-}
+{-# OPTIONS --without-K #-}
 
--- ⊔ "\lub" (least upper bound, basically maximum)
--- 𝓤 "\MCU"
 open import Agda.Primitive
   using ()
   renaming (Set to Type)

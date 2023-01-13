@@ -1,9 +1,9 @@
-{-# OPTIONS --without-K --safe #-}
+{-# OPTIONS --without-K #-}
 
-open import Agda.Builtin.Maybe
-  using (Maybe ; just ; nothing)
-  public
-
+data Maybe {a} (A : Set a) : Set a where
+  just : A → Maybe A
+  nothing : Maybe A
+  
 open import Util
   hiding (_≡_ ; ¬_ ; _≢_)
 
