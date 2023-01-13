@@ -7,12 +7,22 @@ Inspired by Danny Fekete's post: https://neckdeep.dev/blog/2022-12-13-a-simple-s
 
 ** Haskell, OOP translation
 
+Found in [[./haskell-oop][/haskell-oop]].
+
 Run continuously with ~dev.sh~, or one-shot with ~run.sh~.
 
 ** Haskell, idiomatic solution
 
+Found in [[./haskell-idiomatic][/haskell-idiomatic]].
+
 Run continuously with ~dev.sh~, or one-shot with ~run.sh~.
 
-** Haskell, type-safe solution
-
 ** Agda
+
+Found in [[./agda][/agda]]. See [[./agda/Sandwich.agda][Sandwich.agda]].
+
+Run with [[https://agda.readthedocs.io/en/v2.6.2.2/getting-started/installation.html][Agda]]. Tested with Agda version 2.6.2.2.
+
+Empty goals (~{!!}~) represent (intentionally) failed attempts at making a sandwich.
+
+Sandwich-HoTT.agda is an alternate version, using Homotopy Type Thoery (HoTT) notions (Martin-Löf type theory). Really, this just means using Σ types instead of records. The disadvantage of using Σ types is the code is not as clear/readable, but the advantage is we can prove lots of HoTT properties (e.g., a sum of sets is a set). As of writing this, the HoTT properties are not used so the other version is preferred.
